@@ -1,4 +1,4 @@
-import { Machine, assign, DoneInvokeEvent, interpret } from "xstate";
+import { assign, DoneInvokeEvent, createMachine } from "xstate";
 import fetch from "node-fetch";
 
 async function invokeFetchSubreddit(context: RedditContext) {
@@ -9,26 +9,27 @@ async function invokeFetchSubreddit(context: RedditContext) {
   return json.data.children.map((child: any) => child.data);
 }
 
-interface RedditSchema {
-  states: {
-    idle: {};
-    selected: {
-      states: {
-        loading: {};
-        loaded: {};
-        failed: {};
-      };
-    };
-  };
-}
-
 type RedditEvent = { type: "SELECT"; name: string };
 
 interface RedditContext {
   subreddit: string | null;
   posts: string[] | null;
 }
-export const redditMachine = Machine<RedditContext, RedditSchema, RedditEvent>({
+
+type RedditState = {
+  value:
+    | "idle"
+    | { selected: "loading" }
+    | { selected: "loaded" }
+    | { selected: "failed" };
+  context: RedditContext;
+};
+
+export const redditMachine = createMachine<
+  RedditContext,
+  RedditEvent,
+  RedditState
+>({
   id: "reddit",
   initial: "idle",
   context: {

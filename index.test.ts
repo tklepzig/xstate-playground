@@ -12,7 +12,8 @@ describe("reddit machine (live)", () => {
 
     const redditService = interpret(redditMachine)
       .onTransition((state) => {
-        if (state.matches({ selected: "loaded" })) {
+        //TODO: There is an type issue, therefore the "Boolean" wrapper, see https://github.com/davidkpiano/xstate/issues/1301
+        if (Boolean(state.matches({ selected: "loaded" }))) {
           expect(state.context.posts).not.toBe(null);
 
           done();
